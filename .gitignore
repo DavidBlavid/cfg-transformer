@@ -1,0 +1,8 @@
+# ignore the src/documents folder
+/src/documents
+
+# ignore the src/grammars folder
+/src/grammars
+
+# ignore all __pycache__ folders
+__pycache__

@@ -1,0 +1,1 @@
+from cfg_utils.datasets import generate_documents
