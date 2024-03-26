@@ -18,10 +18,8 @@ meta_grammar = [
 'S -> RULE [1.0]',
 'RULE -> NONTERMINAL " -> " CONTENT_PROB [1.0]',
 'CONTENT_PROB -> CONTENT " [" PROBABILITY "]" [1.0]',
-'CONTENT -> TERMINAL_PRE [0.25]',
-'CONTENT -> NONTERMINAL " " TERMINAL_PRE [0.25]',
-'CONTENT -> NONTERMINAL [0.25]',
-'CONTENT -> NONTERMINAL " " NONTERMINAL [0.25]',
+'CONTENT -> TERMINAL_PRE [P1]',
+'CONTENT -> NONTERMINAL " " NONTERMINAL [P2]',
 'TERMINAL_PRE -> "#" TERMINAL "#" [1.0]',    # "#" gets replaced with double quotes later
 'PROBABILITY -> "+" [1.0]',                   # "+" gets replaced with a proper probability later
 # 'TERMINAL -> "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" | "u" | "v" | "w" | "x" | "y" | "z"',
@@ -30,6 +28,9 @@ meta_grammar = [
 
 # generate a random valid sentence from the grammar
 def generate_sentence_pcfg(grammar: str | nltk.PCFG, join_char=' '):
+    """
+    Generate a random sentence from the given PCFG grammar.
+    """
 
     # how often to try to generate a valid sentence
     # if we fail, we raise a ValueError
@@ -80,10 +81,27 @@ def generate_sentence_pcfg(grammar: str | nltk.PCFG, join_char=' '):
     raise ValueError("The grammar is too complex to generate a valid sentence.")
 
 # this function generates a random grammar
-def generate_pcfg(terminals, nonterminals, n_rules=5):
+def generate_pcfg(terminals, nonterminals, n_rules=5, prob_terminal=0.5) -> str:
+    """
+    Generate a random PCFG grammar with the given terminals and nonterminals.
+    The grammar will have n_rules rules that are all in chomsky normal form.
+    Rules can have the form `A -> "a" [prob_terminal]` or `A -> B C [1 - prob_terminal]`.
+    - terminals (`list[str]`): a list of terminal symbols
+    - nonterminals (`list[str]`): a list of nonterminal symbols
+    - n_rules (`int`): the number of rules in the grammar
+    - prob_terminal (`float`): the probability of a rule being a terminal rule
+    """
+
+
     assert n_rules >= len(nonterminals), "There must be at least as many rules as nonterminals (n_rules >= len(nonterminals))"
 
     meta_rules = meta_grammar.copy()
+
+    # insert the probabilities for terminals and nonterminals
+    prob_nonterminal = 1.0 - prob_terminal
+
+    meta_rules[3] = meta_rules[3].replace('P1', str(prob_terminal))
+    meta_rules[4] = meta_rules[4].replace('P2', str(prob_nonterminal))
 
     terminal_prob = 1.0 / len(terminals)
     nonterminal_prob = 1.0 / len(nonterminals)
@@ -150,8 +168,9 @@ def generate_pcfg(terminals, nonterminals, n_rules=5):
             # the next random number is between 0 and 1
             # we use this to assign a probability to the rule
             if j < len(rules) - 1:
-                prob = random.random() * (1 - prob_sum)
+                prob = (random.random() * (1 - prob_sum)) / 2.0    # divide by 2 to make the probabilities more equally distributed
             else:
+                # the last rule gets the rest of the probability
                 prob = 1 - prob_sum
             
             prob_sum += prob

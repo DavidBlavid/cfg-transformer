@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  cfg-transformer:
+    image: cfg-transformer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./documents:/app/documents
+      - ./grammars:/app/grammars

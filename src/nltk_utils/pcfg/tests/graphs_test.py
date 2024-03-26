@@ -1,5 +1,5 @@
 import nltk
-from nltk_utils.graphs import is_transient, build_transition_graph, find_reachable_states, find_absorbing_states
+from nltk_utils.graphs import is_transient, build_transient_transition_graph, get_reachable_states, find_absorbing_states
 
 # Test cases for is_grammar_transient
 # True, simple path to terminal
